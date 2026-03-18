@@ -1,0 +1,55 @@
+<!-- frontend/recomendaciones.html -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartPrice Pyme - Recomendaciones</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-brand">
+            <a href="index.html">SmartPrice Pyme</a>
+        </div>
+        <ul class="navbar-menu">
+            <li><a href="index.html">Dashboard</a></li>
+            <li><a href="productos.html">Productos</a></li>
+            <li><a href="ventas.html">Ventas</a></li>
+            <li><a href="recomendaciones.html" class="active">Recomendaciones</a></li>
+            <li><a href="simulacion.html">Simular</a></li>
+            <li><a href="#" id="logoutBtn">Cerrar Sesión</a></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Recomendaciones de Precios</h2>
+                <button class="btn btn-primary" onclick="generarTodasRecomendaciones()">
+                    Generar Todas
+                </button>
+            </div>
+            
+            <!-- Filtros -->
+            <div style="margin-bottom: 1rem; display: flex; gap: 0.5rem;">
+                <button class="btn btn-sm" onclick="filtrarRecomendaciones('todas')">Todas</button>
+                <button class="btn btn-success btn-sm" onclick="filtrarRecomendaciones('subir')">Subir</button>
+                <button class="btn btn-danger btn-sm" onclick="filtrarRecomendaciones('bajar')">Bajar</button>
+                <button class="btn btn-warning btn-sm" onclick="filtrarRecomendaciones('mantener')">Mantener</button>
+            </div>
+            
+            <!-- Lista de recomendaciones -->
+            <div id="listaRecomendaciones">
+                <div class="loading">
+                    <div class="loading-spinner"></div>
+                    <p>Cargando recomendaciones...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script src="js/recomendaciones.js"></script>
+</body>
+</html>

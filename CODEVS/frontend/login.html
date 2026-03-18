@@ -1,0 +1,63 @@
+<!-- frontend/login.html -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartPrice Pyme - Login</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        .login-container {
+            max-width: 400px;
+            margin: 100px auto;
+        }
+        
+        .login-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .login-header h1 {
+            color: var(--primary-color);
+            font-size: 2rem;
+        }
+        
+        .login-header p {
+            color: var(--gray-color);
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="card">
+            <div class="login-header">
+                <h1>SmartPrice Pyme</h1>
+                <p>Inicia sesión para continuar</p>
+            </div>
+            
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" class="form-control" id="email" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Contraseña</label>
+                    <input type="password" class="form-control" id="password" required>
+                </div>
+                
+                <button type="submit" class="btn btn-primary" style="width: 100%;">
+                    Iniciar Sesión
+                </button>
+            </form>
+            
+            <div style="text-align: center; margin-top: 1rem;">
+                <p>¿No tienes cuenta? <a href="#" onclick="mostrarRegistro()">Regístrate</a></p>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script src="js/auth.js"></script>
+</body>
+</html>

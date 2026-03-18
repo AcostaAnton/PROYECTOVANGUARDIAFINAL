@@ -1,0 +1,194 @@
+<!-- frontend/simulacion.html -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartPrice Pyme - Simulador</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        .opciones-precio {
+            display: flex;
+            gap: 10px;
+            margin: 15px 0;
+            flex-wrap: wrap;
+        }
+        .btn-opcion {
+            background-color: #e9ecef;
+            border: 1px solid #ced4da;
+            border-radius: 20px;
+            padding: 8px 15px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        .btn-opcion:hover {
+            background-color: #4361ee;
+            color: white;
+            border-color: #4361ee;
+        }
+        .btn-opcion.selected {
+            background-color: #4361ee;
+            color: white;
+            border-color: #4361ee;
+        }
+        .recomendacion-box {
+            background-color: #f8f9fa;
+            border-left: 4px solid #4361ee;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        .recomendacion-buena {
+            border-left-color: #4cc9f0;
+            background-color: #f0f9ff;
+        }
+        .recomendacion-mala {
+            border-left-color: #f72585;
+            background-color: #fff0f5;
+        }
+        .recomendacion-neutra {
+            border-left-color: #f8961e;
+            background-color: #fff4e6;
+        }
+        .diferencia-positiva {
+            color: #4cc9f0;
+            font-weight: bold;
+        }
+        .diferencia-negativa {
+            color: #f72585;
+            font-weight: bold;
+        }
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            cursor: help;
+        }
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 200px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -100px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 12px;
+        }
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-brand">
+            <a href="index.html">SmartPrice Pyme</a>
+        </div>
+        <ul class="navbar-menu">
+            <li><a href="index.html">Dashboard</a></li>
+            <li><a href="productos.html">Productos</a></li>
+            <li><a href="ventas.html">Ventas</a></li>
+            <li><a href="recomendaciones.html">Recomendaciones</a></li>
+            <li><a href="simulacion.html" class="active">Simular</a></li>
+            <li><a href="#" id="logoutBtn">Cerrar Sesión</a></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <h1>🎯 Simulador Inteligente de Precios</h1>
+        
+        <div class="row">
+            <!-- Columna izquierda: Formulario -->
+            <div class="col">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">📊 Nueva Simulación</h3>
+                    </div>
+                    
+                    <form id="simulacionForm">
+                        <div class="form-group">
+                            <label for="productoSimular">
+                                <strong>Producto</strong>
+                                <span class="tooltip">❓
+                                    <span class="tooltiptext">Selecciona el producto que quieres analizar</span>
+                                </span>
+                            </label>
+                            <select class="form-control" id="productoSimular" required>
+                                <option value="">Cargando productos...</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Información del producto seleccionado -->
+                        <div id="infoProducto" style="background-color: #e9ecef; padding: 15px; border-radius: 8px; margin: 15px 0; display: none;">
+                            <p><strong>📦 Información actual:</strong></p>
+                            <div id="infoDetalle"></div>
+                        </div>
+                        
+                        <!-- Opciones rápidas de precio -->
+                        <div class="form-group">
+                            <label><strong>⚡ Opciones rápidas de precio</strong></label>
+                            <div class="opciones-precio" id="opcionesRapidas">
+                                <!-- Se llenará con JavaScript -->
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="precioSimulado">
+                                <strong>💰 Precio a Simular ($)</strong>
+                                <span class="tooltip">❓
+                                    <span class="tooltiptext">Escribe el precio que quieres probar o haz clic en las opciones rápidas</span>
+                                </span>
+                            </label>
+                            <input type="number" class="form-control" id="precioSimulado" min="1" step="1" placeholder="Ej: 275000" required>
+                            <small style="color: #6c757d;">Puedes escribir cualquier número o usar las opciones rápidas arriba</small>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary" style="width: 100%; font-size: 1.1rem; padding: 12px;">
+                            🔮 Ver Proyección
+                        </button>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Columna derecha: Resultado -->
+            <div class="col">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">📈 Resultado de la Simulación</h3>
+                    </div>
+                    
+                    <div id="resultadoSimulacion" style="min-height: 300px;">
+                        <div style="text-align: center; color: #6c757d; padding: 50px 20px;">
+                            <p style="font-size: 3rem; margin: 0;">🔍</p>
+                            <p>Selecciona un producto y precio para ver el análisis</p>
+                            <p style="font-size: 0.9rem;">Prueba diferentes precios y descubre cuál maximiza tus ganancias</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Historial de Simulaciones -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">📜 Historial de Simulaciones</h3>
+            </div>
+            
+            <div id="historialSimulaciones">
+                <div class="loading">Selecciona un producto para ver su historial</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script src="js/simulacion.js"></script>
+</body>
+</html>

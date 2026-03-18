@@ -1,0 +1,128 @@
+<!-- frontend/index.html -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartPrice Pyme - Dashboard</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-brand">
+            <a href="index.html">SmartPrice Pyme</a>
+        </div>
+        <ul class="navbar-menu">
+            <li><a href="index.html" class="active">Dashboard</a></li>
+            <li><a href="productos.html">Productos</a></li>
+            <li><a href="ventas.html">Ventas</a></li>
+            <li><a href="recomendaciones.html">Recomendaciones</a></li>
+            <li><a href="simulacion.html">Simular</a></li>
+            <li><a href="#" id="logoutBtn">Cerrar Sesión</a></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <h1>Dashboard SmartPrice</h1>
+        
+        <!-- Stats Cards -->
+        <div class="row" id="statsContainer">
+            <div class="col">
+                <div class="stats-card">
+                    <div class="label">Productos</div>
+                    <div class="number" id="totalProductos">-</div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="stats-card" style="background: linear-gradient(135deg, #4cc9f0, #4895ef);">
+                    <div class="label">Recomendaciones</div>
+                    <div class="number" id="totalRecomendaciones">-</div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="stats-card" style="background: linear-gradient(135deg, #f72585, #b5179e);">
+                    <div class="label">Ventas Hoy</div>
+                    <div class="number" id="ventasHoy">-</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Resumen de Recomendaciones -->
+        <div class="row">
+            <div class="col">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Recomendaciones por Acción</h3>
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Acción</th>
+                                    <th>Cantidad</th>
+                                    <th>Promedio Cambio</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recomendacionesPorAccion">
+                                <tr><td colspan="3" class="loading">Cargando...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Alertas de Stock</h3>
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Producto</th>
+                                    <th>Stock</th>
+                                    <th>Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody id="alertasStock">
+                                <tr><td colspan="3" class="loading">Cargando...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Últimas Recomendaciones -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Últimas Recomendaciones</h3>
+                <button class="btn btn-primary btn-sm" onclick="generarTodasRecomendaciones()">
+                    Generar Todas
+                </button>
+            </div>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Producto</th>
+                            <th>Precio Actual</th>
+                            <th>Precio Recomendado</th>
+                            <th>Acción</th>
+                            <th>Cambio</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ultimasRecomendaciones">
+                        <tr><td colspan="6" class="loading">Cargando...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script src="js/dashboard.js"></script>
+</body>
+</html>

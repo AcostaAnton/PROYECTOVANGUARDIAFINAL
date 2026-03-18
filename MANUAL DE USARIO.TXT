@@ -1,0 +1,33 @@
+## 📱 MANUAL DE USUARIO
+
+### **Cómo usar SmartPrice Pyme:**
+
+#### **1. Primeros pasos**
+1. Registrarse en /login.html
+2. Iniciar sesión con email y contraseña
+3. Explorar el dashboard
+
+#### **2. Gestión de Productos**
+- **Agregar:** Botón "+ Nuevo Producto"
+- **Editar:** Click en "Editar" junto al producto
+- **Eliminar:** Click en "Eliminar" (borrado lógico)
+- **Buscar:** Usar el campo de búsqueda
+
+#### **3. Registrar Ventas**
+1. Ir a "Ventas"
+2. Seleccionar producto
+3. Ingresar cantidad
+4. Click en "Registrar Venta"
+
+#### **4. Generar Recomendaciones**
+1. Ir a "Recomendaciones"
+2. Click en "Generar Todas"
+3. Revisar sugerencias (Subir/Bajar/Mantener)
+4. Click en "Aplicar" para actualizar precio
+
+#### **5. Simular Precios**
+1. Ir a "Simular"
+2. Seleccionar producto
+3. Elegir opción rápida o escribir precio
+4. Click en "Ver Proyección"
+5. Analizar resultados

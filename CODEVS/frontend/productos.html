@@ -1,0 +1,124 @@
+<!-- frontend/productos.html -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartPrice Pyme - Productos</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-brand">
+            <a href="index.html">SmartPrice Pyme</a>
+        </div>
+        <ul class="navbar-menu">
+            <li><a href="index.html">Dashboard</a></li>
+            <li><a href="productos.html" class="active">Productos</a></li>
+            <li><a href="ventas.html">Ventas</a></li>
+            <li><a href="recomendaciones.html">Recomendaciones</a></li>
+            <li><a href="simulacion.html">Simular</a></li>
+            <li><a href="#" id="logoutBtn">Cerrar Sesión</a></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Gestión de Productos</h2>
+                <button class="btn btn-primary" onclick="mostrarFormularioProducto()">
+                    + Nuevo Producto
+                </button>
+            </div>
+            
+            <!-- Buscador -->
+            <div style="margin-bottom: 1rem;">
+                <input type="text" class="form-control" placeholder="Buscar productos..." 
+                       id="buscador" onkeyup="buscarProductos(this.value)">
+            </div>
+            
+            <!-- Tabla de productos -->
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>SKU</th>
+                            <th>Nombre</th>
+                            <th>Precio Base</th>
+                            <th>Precio Actual</th>
+                            <th>Stock</th>
+                            <th>Categoría</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaProductos">
+                        <tr><td colspan="7" class="loading">Cargando productos...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para producto -->
+    <div id="productoModal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="cerrarModal()">&times;</span>
+            <h2 id="modalTitulo">Nuevo Producto</h2>
+            
+            <form id="productoForm">
+                <input type="hidden" id="productoId">
+                
+                <div class="form-group">
+                    <label for="sku">SKU</label>
+                    <input type="text" class="form-control" id="sku" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="nombre">Nombre</label>
+                    <input type="text" class="form-control" id="nombre" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="descripcion">Descripción</label>
+                    <textarea class="form-control" id="descripcion" rows="2"></textarea>
+                </div>
+                
+                <div class="row">
+                    <div class="col">
+                        <div class="form-group">
+                            <label for="precioBase">Precio Base ($)</label>
+                            <input type="number" class="form-control" id="precioBase" required>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="form-group">
+                            <label for="stock">Stock</label>
+                            <input type="number" class="form-control" id="stock" required>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col">
+                        <div class="form-group">
+                            <label for="categoria">Categoría</label>
+                            <input type="text" class="form-control" id="categoria">
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="form-group">
+                            <label for="proveedor">Proveedor</label>
+                            <input type="text" class="form-control" id="proveedor">
+                        </div>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">Guardar Producto</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script src="js/productos.js"></script>
+</body>
+</html>
