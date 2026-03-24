@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     document.getElementById('productoForm').addEventListener('submit', guardarProducto);
 });
-
+//CRUD READ
 async function cargarProductos() {
     try {
         const response = await fetch(`${API.BASE_URL}${API.PRODUCTOS.BASE}`, {
@@ -90,6 +90,7 @@ function cerrarModal() {
     document.getElementById('productoModal').style.display = 'none';
 }
 
+//CRUD CREATE
 async function guardarProducto(e) {
     e.preventDefault();
     
@@ -128,6 +129,7 @@ async function guardarProducto(e) {
     }
 }
 
+//CRUD UPDATE
 async function editarProducto(id) {
     try {
         const response = await fetch(`${API.BASE_URL}${API.PRODUCTOS.BASE}/${id}`, {
@@ -154,6 +156,7 @@ async function editarProducto(id) {
     }
 }
 
+//CRUD DELETE
 async function eliminarProducto(id) {
     if (!confirm('¿Estás seguro de eliminar este producto?')) {
         return;
