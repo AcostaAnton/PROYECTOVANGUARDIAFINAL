@@ -58,16 +58,6 @@ const productoSchema = new Schema({
     }
 }, { versionKey: false });
 
-// MIDDLEWARES COMENTADOS TEMPORALMENTE PARA EVITAR EL ERROR
-// productoSchema.pre('save', function(next) {
-//     this.ultimaActualizacion = Date.now();
-//     next();
-// });
-
-// productoSchema.pre('findOneAndUpdate', function(next) {
-//     this.set({ ultimaActualizacion: Date.now() });
-//     next();
-// });
 
 const Productos = mongoose.model('producto', productoSchema);
 module.exports = Productos;

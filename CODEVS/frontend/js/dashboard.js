@@ -496,9 +496,9 @@ function mostrarAlerta(mensaje, tipo) {
     mostrarNotificacion('Información', mensaje, tipo);
 }
 
-// ============================================
+
 // MODO OSCURO - FUNCIONES
-// ============================================
+
 
 // Inicializar modo oscuro al cargar la página
 function initDarkMode() {

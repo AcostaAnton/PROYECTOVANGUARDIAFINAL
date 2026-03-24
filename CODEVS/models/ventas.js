@@ -47,13 +47,8 @@ const ventaSchema = new Schema({
         type: String,
         trim: true
     }
-}, {versionKey: false});
-
-// MIDDLEWARE COMENTADO TEMPORALMENTE
-// ventaSchema.pre('save', function(next) {
-//     this.precioTotal = this.cantidad * this.precioUnitario;
-//     next();
-// });
+}, 
+{versionKey: false});
 
 ventaSchema.index({ fechaVenta: -1 });
 
