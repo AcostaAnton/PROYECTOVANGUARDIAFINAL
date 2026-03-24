@@ -166,6 +166,155 @@ async function cargarResumenDiario() {
     }
 }
 
+// ============ FUNCIONES DE EXPORTACIÓN ============
+
+// Exportar a Excel (XLSX)
+window.exportarExcel = async function() {
+    try {
+        mostrarAlerta('📊 Generando archivo Excel...', 'info');
+        
+        // Obtener todas las ventas
+        const response = await fetch(`${API.BASE_URL}${API.VENTAS.BASE}`, {
+            headers: getHeaders()
+        });
+        const data = await handleResponse(response);
+        const ventas = data.ventas || [];
+        
+        if (ventas.length === 0) {
+            mostrarAlerta('No hay ventas para exportar', 'warning');
+            return;
+        }
+        
+        // Formatear datos para Excel
+        const datosExcel = ventas.map(venta => ({
+            'Fecha': new Date(venta.fechaVenta).toLocaleString(),
+            'Producto': venta.nombreProducto,
+            'SKU': venta.skuProducto || 'N/A',
+            'Cantidad': venta.cantidad,
+            'Precio Unitario': venta.precioUnitario,
+            'Total': venta.precioTotal,
+            'Método Pago': venta.metodoPago,
+            'Vendedor': venta.usuario?.nombre || 'N/A'
+        }));
+        
+        // Crear archivo CSV (que Excel abre fácilmente)
+        const headers = ['Fecha', 'Producto', 'SKU', 'Cantidad', 'Precio Unitario', 'Total', 'Método Pago', 'Vendedor'];
+        const filas = datosExcel.map(item => [
+            item.Fecha,
+            item.Producto,
+            item.SKU,
+            item.Cantidad,
+            item['Precio Unitario'],
+            item.Total,
+            item['Método Pago'],
+            item.Vendedor
+        ]);
+        
+        // Crear contenido CSV
+        let csvContent = headers.join(',') + '\n';
+        filas.forEach(fila => {
+            const filaFormateada = fila.map(celda => {
+                // Si el valor tiene comas o comillas, envolver en comillas
+                if (typeof celda === 'string' && (celda.includes(',') || celda.includes('"'))) {
+                    return `"${celda.replace(/"/g, '""')}"`;
+                }
+                return celda;
+            }).join(',');
+            csvContent += filaFormateada + '\n';
+        });
+        
+        // Descargar como archivo .xlsx (Excel lo abre)
+        const blob = new Blob(["\uFEFF" + csvContent], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        const fecha = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
+        link.setAttribute('download', `ventas_${fecha}.xls`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        
+        mostrarAlerta(`✅ ${ventas.length} ventas exportadas a Excel`, 'success');
+        
+    } catch (error) {
+        console.error('Error exportando:', error);
+        mostrarAlerta('Error al exportar: ' + error.message, 'danger');
+    }
+};
+
+// Exportar a CSV
+window.exportarCSV = async function() {
+    try {
+        mostrarAlerta('📄 Generando archivo CSV...', 'info');
+        
+        // Obtener todas las ventas
+        const response = await fetch(`${API.BASE_URL}${API.VENTAS.BASE}`, {
+            headers: getHeaders()
+        });
+        const data = await handleResponse(response);
+        const ventas = data.ventas || [];
+        
+        if (ventas.length === 0) {
+            mostrarAlerta('No hay ventas para exportar', 'warning');
+            return;
+        }
+        
+        // Crear cabeceras CSV
+        const headers = ['Fecha', 'Producto', 'SKU', 'Cantidad', 'Precio Unitario', 'Total', 'Método Pago', 'Vendedor'];
+        
+        // Crear filas
+        const filas = ventas.map(venta => [
+            new Date(venta.fechaVenta).toLocaleString(),
+            venta.nombreProducto,
+            venta.skuProducto || 'N/A',
+            venta.cantidad,
+            venta.precioUnitario,
+            venta.precioTotal,
+            venta.metodoPago,
+            venta.usuario?.nombre || 'N/A'
+        ]);
+        
+        // Combinar todo
+        let csvContent = headers.join(',') + '\n';
+        filas.forEach(fila => {
+            const filaFormateada = fila.map(celda => {
+                if (typeof celda === 'string' && (celda.includes(',') || celda.includes('"'))) {
+                    return `"${celda.replace(/"/g, '""')}"`;
+                }
+                return celda;
+            }).join(',');
+            csvContent += filaFormateada + '\n';
+        });
+        
+        // Agregar resumen al final del CSV
+        const totalVentas = ventas.length;
+        const ingresosTotales = ventas.reduce((sum, v) => sum + v.precioTotal, 0);
+        csvContent += '\n';
+        csvContent += `"RESUMEN","","","","","","",""\n`;
+        csvContent += `"Total Ventas",${totalVentas},"","","","","",""\n`;
+        csvContent += `"Ingresos Totales",$${ingresosTotales.toLocaleString()},"","","","","",""\n`;
+        
+        // Descargar
+        const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        const fecha = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
+        link.setAttribute('download', `ventas_${fecha}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        
+        mostrarAlerta(`✅ ${ventas.length} ventas exportadas a CSV`, 'success');
+        
+    } catch (error) {
+        console.error('Error exportando:', error);
+        mostrarAlerta('Error al exportar: ' + error.message, 'danger');
+    }
+};
+
 function mostrarAlerta(mensaje, tipo) {
     const alerta = document.createElement('div');
     alerta.className = `alert alert-${tipo}`;
@@ -174,6 +323,8 @@ function mostrarAlerta(mensaje, tipo) {
     alerta.style.top = '20px';
     alerta.style.right = '20px';
     alerta.style.zIndex = '10000';
+    alerta.style.minWidth = '250px';
+    alerta.style.boxShadow = '0 4px 6px rgba(0,0,0,0.1)';
     
     document.body.appendChild(alerta);
     

@@ -78,7 +78,15 @@
         
         <div class="card">
             <div class="card-header">
-                <h3 class="card-title">Últimas Ventas</h3>
+                <h3 class="card-title">📋 Historial de Ventas</h3>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn btn-success btn-sm" onclick="exportarExcel()">
+                        📊 Exportar a Excel
+                    </button>
+                    <button class="btn btn-info btn-sm" onclick="exportarCSV()">
+                        📄 Exportar a CSV
+                    </button>
+                </div>
             </div>
             
             <div class="table-container">
