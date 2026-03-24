@@ -1,8 +1,13 @@
 // frontend/js/dashboard.js
 
-// Variables globales para los gráficos
+// Variables globales
 let ventasChart = null;
 let recomendacionesChart = null;
+let ultimoEstado = {
+    stockBajo: [],
+    recomendaciones: []
+};
+let intervaloActualizacion = null;
 
 document.addEventListener('DOMContentLoaded', () => {
     const token = localStorage.getItem('token');
@@ -12,14 +17,42 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     cargarDashboard();
+    iniciarActualizacionAutomatica();
     
     document.getElementById('logoutBtn').addEventListener('click', (e) => {
         e.preventDefault();
+        detenerActualizacionAutomatica();
         localStorage.removeItem('token');
         localStorage.removeItem('usuario');
         window.location.href = 'login.html';
     });
+    
+    document.getElementById('refreshBtn').addEventListener('click', () => {
+        const btn = document.getElementById('refreshBtn');
+        btn.classList.add('refresh-spin');
+        cargarDashboard().finally(() => {
+            setTimeout(() => btn.classList.remove('refresh-spin'), 500);
+        });
+    });
 });
+
+// Iniciar actualización automática cada 30 segundos
+function iniciarActualizacionAutomatica() {
+    if (intervaloActualizacion) {
+        clearInterval(intervaloActualizacion);
+    }
+    intervaloActualizacion = setInterval(() => {
+        console.log('🔄 Actualización automática...');
+        cargarDashboard();
+    }, 30000); // Cada 30 segundos
+}
+
+function detenerActualizacionAutomatica() {
+    if (intervaloActualizacion) {
+        clearInterval(intervaloActualizacion);
+        intervaloActualizacion = null;
+    }
+}
 
 async function cargarDashboard() {
     try {
@@ -28,12 +61,14 @@ async function cargarDashboard() {
             headers: getHeaders()
         });
         const productosData = await handleResponse(productosRes);
+        const productos = productosData.productos || [];
         
         // Cargar recomendaciones
         const recomendacionesRes = await fetch(`${API.BASE_URL}${API.RECOMENDACIONES.BASE}`, {
             headers: getHeaders()
         });
         const recomendacionesData = await handleResponse(recomendacionesRes);
+        const recomendaciones = recomendacionesData.recomendaciones || [];
         
         // Cargar TODAS las ventas
         const ventasRes = await fetch(`${API.BASE_URL}${API.VENTAS.BASE}`, {
@@ -44,42 +79,160 @@ async function cargarDashboard() {
         // Cargar ventas de los últimos 7 días para el gráfico
         const ventasUltimos7Dias = await cargarVentasUltimos7Dias();
         
+        // VERIFICAR CAMBIOS Y MOSTRAR NOTIFICACIONES
+        verificarCambios(productos, recomendaciones);
+        
         // Actualizar stats
         actualizarStats(
-            productosData.productos || [],
-            recomendacionesData.recomendaciones || [],
+            productos,
+            recomendaciones,
             ventasData.ventas || []
         );
         
         // Mostrar recomendaciones por acción
-        mostrarRecomendacionesPorAccion(recomendacionesData.recomendaciones || []);
+        mostrarRecomendacionesPorAccion(recomendaciones);
         
         // Mostrar alertas de stock
-        mostrarAlertasStock(productosData.productos || []);
+        mostrarAlertasStock(productos);
         
         // Mostrar últimas recomendaciones
-        mostrarUltimasRecomendaciones(recomendacionesData.recomendaciones || []);
+        mostrarUltimasRecomendaciones(recomendaciones);
         
         // CREAR GRÁFICOS
         crearGraficoVentas(ventasUltimos7Dias);
-        crearGraficoRecomendaciones(recomendacionesData.recomendaciones || []);
+        crearGraficoRecomendaciones(recomendaciones);
+        
+        // Guardar estado actual para futuras comparaciones
+        ultimoEstado = {
+            stockBajo: productos.filter(p => p.stock < 10).map(p => ({ id: p._id, nombre: p.nombre, stock: p.stock })),
+            recomendaciones: recomendaciones.map(r => ({ id: r._id, accion: r.accionRecomendada, producto: r.nombreProducto }))
+        };
         
     } catch (error) {
         console.error('Error en dashboard:', error);
     }
 }
 
+// Verificar cambios y mostrar notificaciones
+function verificarCambios(productos, recomendaciones) {
+    // Verificar nuevos productos con stock bajo
+    const stockBajoActual = productos.filter(p => p.stock < 10).map(p => ({ id: p._id, nombre: p.nombre, stock: p.stock }));
+    const nuevosStockBajo = stockBajoActual.filter(nuevo => 
+        !ultimoEstado.stockBajo.some(antiguo => antiguo.id === nuevo.id)
+    );
+    
+    const stockRecuperado = ultimoEstado.stockBajo.filter(antiguo =>
+        !stockBajoActual.some(nuevo => nuevo.id === antiguo.id)
+    );
+    
+    // Notificar nuevos productos con stock bajo
+    nuevosStockBajo.forEach(producto => {
+        mostrarNotificacion(
+            '⚠️ Alerta de Stock Bajo',
+            `El producto "${producto.nombre}" tiene solo ${producto.stock} unidades restantes. ¡Revisa tu inventario!`,
+            'warning'
+        );
+    });
+    
+    // Notificar productos recuperados
+    stockRecuperado.forEach(producto => {
+        mostrarNotificacion(
+            '✅ Stock Recuperado',
+            `El producto "${producto.nombre}" ya tiene stock suficiente (${producto.stock} unidades).`,
+            'success'
+        );
+    });
+    
+    // Verificar nuevas recomendaciones
+    const recomendacionesActual = recomendaciones.map(r => ({ id: r._id, accion: r.accionRecomendada, producto: r.nombreProducto }));
+    const nuevasRecomendaciones = recomendacionesActual.filter(nuevo =>
+        !ultimoEstado.recomendaciones.some(antiguo => antiguo.id === nuevo.id)
+    );
+    
+    // Notificar nuevas recomendaciones
+    nuevasRecomendaciones.forEach(rec => {
+        let icono = '';
+        let mensaje = '';
+        if (rec.accion === 'subir') {
+            icono = '📈';
+            mensaje = 'Se recomienda SUBIR el precio para maximizar ganancias.';
+        } else if (rec.accion === 'bajar') {
+            icono = '📉';
+            mensaje = 'Se recomienda BAJAR el precio para mover inventario.';
+        } else {
+            icono = '⚖️';
+            mensaje = 'El precio actual es óptimo.';
+        }
+        
+        mostrarNotificacion(
+            `💡 Nueva Recomendación - ${rec.producto}`,
+            `${icono} ${mensaje}`,
+            rec.accion === 'subir' ? 'success' : (rec.accion === 'bajar' ? 'danger' : 'info')
+        );
+    });
+    
+    // Notificar resumen general si hay muchas alertas
+    if (stockBajoActual.length > 3 && stockBajoActual.length > ultimoEstado.stockBajo.length) {
+        mostrarNotificacion(
+            '📊 Resumen de Inventario',
+            `Tienes ${stockBajoActual.length} productos con stock bajo. Revisa la sección "Alertas de Stock".`,
+            'warning'
+        );
+    }
+}
+
+// Función para mostrar notificaciones mejoradas
+function mostrarNotificacion(titulo, mensaje, tipo = 'info') {
+    // Crear contenedor de notificaciones si no existe
+    let container = document.querySelector('.notification-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.className = 'notification-container';
+        document.body.appendChild(container);
+    }
+    
+    // Crear notificación
+    const notificacion = document.createElement('div');
+    notificacion.className = `notification ${tipo}`;
+    
+    const iconos = {
+        success: '✅',
+        warning: '⚠️',
+        danger: '❌',
+        info: 'ℹ️'
+    };
+    
+    notificacion.innerHTML = `
+        <div class="notification-icon">${iconos[tipo] || 'ℹ️'}</div>
+        <div class="notification-content">
+            <div class="notification-title">${titulo}</div>
+            <div class="notification-message">${mensaje}</div>
+        </div>
+        <div class="notification-close" onclick="this.closest('.notification').remove()">×</div>
+    `;
+    
+    container.appendChild(notificacion);
+    
+    // Auto-cerrar después de 8 segundos
+    setTimeout(() => {
+        if (notificacion && notificacion.parentNode) {
+            notificacion.classList.add('hide');
+            setTimeout(() => {
+                if (notificacion.parentNode) notificacion.remove();
+            }, 300);
+        }
+    }, 8000);
+}
+
 // Función para cargar ventas de los últimos 7 días
 async function cargarVentasUltimos7Dias() {
     try {
-        // Obtener todas las ventas
         const response = await fetch(`${API.BASE_URL}${API.VENTAS.BASE}`, {
             headers: getHeaders()
         });
         const data = await handleResponse(response);
         const ventas = data.ventas || [];
         
-        // Calcular ventas por día de los últimos 7 días
         const dias = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
         const ventasPorDia = new Array(7).fill(0);
         
@@ -95,8 +248,7 @@ async function cargarVentasUltimos7Dias() {
             }
         });
         
-        // Reordenar para que empiece por Lunes
-        const orden = [1, 2, 3, 4, 5, 6, 0]; // Lun a Dom
+        const orden = [1, 2, 3, 4, 5, 6, 0];
         const ventasOrdenadas = orden.map(idx => ventasPorDia[idx]);
         const etiquetasOrdenadas = orden.map(idx => dias[idx]);
         
@@ -118,7 +270,6 @@ function crearGraficoVentas(datos) {
     const ctx = document.getElementById('ventasChart');
     if (!ctx) return;
     
-    // Destruir gráfico anterior si existe
     if (ventasChart) {
         ventasChart.destroy();
     }
@@ -175,12 +326,7 @@ function crearGraficoRecomendaciones(recomendaciones) {
     const ctx = document.getElementById('recomendacionesChart');
     if (!ctx) return;
     
-    // Contar recomendaciones por acción
-    const conteo = {
-        subir: 0,
-        bajar: 0,
-        mantener: 0
-    };
+    const conteo = { subir: 0, bajar: 0, mantener: 0 };
     
     recomendaciones.forEach(rec => {
         if (conteo[rec.accionRecomendada] !== undefined) {
@@ -188,7 +334,6 @@ function crearGraficoRecomendaciones(recomendaciones) {
         }
     });
     
-    // Destruir gráfico anterior si existe
     if (recomendacionesChart) {
         recomendacionesChart.destroy();
     }
@@ -235,14 +380,9 @@ function actualizarStats(productos, recomendaciones, ventas) {
 
 function mostrarRecomendacionesPorAccion(recomendaciones) {
     const tbody = document.getElementById('recomendacionesPorAccion');
-    
     if (!tbody) return;
     
-    const conteo = {
-        subir: 0, 
-        bajar: 0, 
-        mantener: 0
-    };
+    const conteo = { subir: 0, bajar: 0, mantener: 0 };
     
     recomendaciones.forEach(rec => {
         if (conteo[rec.accionRecomendada] !== undefined) {
@@ -250,31 +390,17 @@ function mostrarRecomendacionesPorAccion(recomendaciones) {
         }
     });
     
-    // Calcular porcentajes
     const total = conteo.subir + conteo.bajar + conteo.mantener;
     
     tbody.innerHTML = `
-        <tr>
-            <td><span class="badge badge-success">SUBIR</span></td>
-            <td>${conteo.subir}</td>
-            <td>${total > 0 ? ((conteo.subir / total) * 100).toFixed(1) : 0}%</td>
-        </tr>
-        <tr>
-            <td><span class="badge badge-danger">BAJAR</span></td>
-            <td>${conteo.bajar}</td>
-            <td>${total > 0 ? ((conteo.bajar / total) * 100).toFixed(1) : 0}%</td>
-        </tr>
-        <tr>
-            <td><span class="badge badge-warning">MANTENER</span></td>
-            <td>${conteo.mantener}</td>
-            <td>${total > 0 ? ((conteo.mantener / total) * 100).toFixed(1) : 0}%</td>
-        </tr>
+        <tr><td><span class="badge badge-success">SUBIR</span></td><td>${conteo.subir}</td><td>${total > 0 ? ((conteo.subir / total) * 100).toFixed(1) : 0}%</td></tr>
+        <tr><td><span class="badge badge-danger">BAJAR</span></td><td>${conteo.bajar}</td><td>${total > 0 ? ((conteo.bajar / total) * 100).toFixed(1) : 0}%</td></tr>
+        <tr><td><span class="badge badge-warning">MANTENER</span></td><td>${conteo.mantener}</td><td>${total > 0 ? ((conteo.mantener / total) * 100).toFixed(1) : 0}%</td></tr>
     `;
 }
 
 function mostrarAlertasStock(productos) {
     const tbody = document.getElementById('alertasStock');
-    
     if (!tbody) return;
     
     const stockBajo = productos.filter(p => p.stock < 10).slice(0, 5);
@@ -295,7 +421,6 @@ function mostrarAlertasStock(productos) {
 
 function mostrarUltimasRecomendaciones(recomendaciones) {
     const tbody = document.getElementById('ultimasRecomendaciones');
-    
     if (!tbody) return;
     
     if (recomendaciones.length === 0) {
@@ -338,15 +463,15 @@ window.generarTodasRecomendaciones = async function() {
         });
         
         const data = await handleResponse(response);
-        mostrarAlerta(data.message, 'success');
-        cargarDashboard(); // Recargar dashboard
+        mostrarNotificacion('✅ Recomendaciones Generadas', data.message, 'success');
+        cargarDashboard();
         
     } catch (error) {
-        mostrarAlerta('Error: ' + error.message, 'danger');
+        mostrarNotificacion('❌ Error', error.message, 'danger');
     }
 };
 
-// Función global para aplicar recomendaciones desde el dashboard
+// Función global para aplicar recomendaciones
 window.aplicarRecomendacion = async function(id) {
     if (!confirm('¿Aplicar esta recomendación? Se actualizará el precio del producto.')) {
         return;
@@ -359,26 +484,14 @@ window.aplicarRecomendacion = async function(id) {
         });
         
         await handleResponse(response);
-        mostrarAlerta('Recomendación aplicada exitosamente', 'success');
-        cargarDashboard(); // Recargar dashboard
+        mostrarNotificacion('✅ Precio Actualizado', 'Recomendación aplicada exitosamente', 'success');
+        cargarDashboard();
         
     } catch (error) {
-        mostrarAlerta('Error: ' + error.message, 'danger');
+        mostrarNotificacion('❌ Error', error.message, 'danger');
     }
 };
 
 function mostrarAlerta(mensaje, tipo) {
-    const alerta = document.createElement('div');
-    alerta.className = `alert alert-${tipo}`;
-    alerta.textContent = mensaje;
-    alerta.style.position = 'fixed';
-    alerta.style.top = '20px';
-    alerta.style.right = '20px';
-    alerta.style.zIndex = '10000';
-    
-    document.body.appendChild(alerta);
-    
-    setTimeout(() => {
-        alerta.remove();
-    }, 3000);
+    mostrarNotificacion('Información', mensaje, tipo);
 }
