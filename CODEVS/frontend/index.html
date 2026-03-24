@@ -22,10 +22,14 @@
             <li><a href="simulacion.html">Simular</a></li>
             <li><a href="#" id="logoutBtn">Cerrar Sesión</a></li>
         </ul>
-        <!-- Botón de actualización -->
-        <button id="refreshBtn" style="background: rgba(255,255,255,0.2); border: none; color: white; padding: 8px 12px; border-radius: 4px; cursor: pointer; margin-left: 10px;">
-            🔄 Actualizar
-        </button>
+        <div style="display: flex; gap: 10px;">
+            <button id="refreshBtn" style="background: rgba(255,255,255,0.2); border: none; color: white; padding: 8px 12px; border-radius: 4px; cursor: pointer;">
+                🔄 Actualizar
+            </button>
+            <button id="themeToggle" class="theme-toggle">
+                🌙 Modo Oscuro
+            </button>
+        </div>
     </nav>
 
     <div class="container">
@@ -91,12 +95,12 @@
                                     <th>Acción</th>
                                     <th>Cantidad</th>
                                     <th>Promedio Cambio</th>
-                                 </tr>
+                                </tr>
                             </thead>
                             <tbody id="recomendacionesPorAccion">
-                                 <tr><td colspan="3" class="loading">Cargando...</td></tr>
+                                <tr><td colspan="3" class="loading">Cargando...</td></tr>
                             </tbody>
-                         </table>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -107,18 +111,18 @@
                         <h3 class="card-title">Alertas de Stock</h3>
                     </div>
                     <div class="table-container">
-                         <table>
+                        <table>
                             <thead>
-                                 <tr>
+                                <tr>
                                     <th>Producto</th>
                                     <th>Stock</th>
                                     <th>Estado</th>
-                                 </tr>
+                                </tr>
                             </thead>
                             <tbody id="alertasStock">
-                                 <tr><td colspan="3" class="loading">Cargando...</td></tr>
+                                <tr><td colspan="3" class="loading">Cargando...</td></tr>
                             </tbody>
-                         </table>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -133,21 +137,21 @@
                 </button>
             </div>
             <div class="table-container">
-                 <table>
+                <table>
                     <thead>
-                         <tr>
+                        <tr>
                             <th>Producto</th>
                             <th>Precio Actual</th>
                             <th>Precio Recomendado</th>
                             <th>Acción</th>
                             <th>Cambio</th>
                             <th>Acciones</th>
-                         </tr>
+                        </tr>
                     </thead>
                     <tbody id="ultimasRecomendaciones">
-                         <tr><td colspan="6" class="loading">Cargando...</td></tr>
+                        <tr><td colspan="6" class="loading">Cargando...</td></tr>
                     </tbody>
-                 </table>
+                </table>
             </div>
         </div>
     </div>

@@ -495,3 +495,88 @@ window.aplicarRecomendacion = async function(id) {
 function mostrarAlerta(mensaje, tipo) {
     mostrarNotificacion('Información', mensaje, tipo);
 }
+
+// ============================================
+// MODO OSCURO - FUNCIONES
+// ============================================
+
+// Inicializar modo oscuro al cargar la página
+function initDarkMode() {
+    const savedTheme = localStorage.getItem('theme');
+    const themeToggle = document.getElementById('themeToggle');
+    
+    if (savedTheme === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        if (themeToggle) {
+            themeToggle.innerHTML = '☀️ Modo Claro';
+        }
+    } else {
+        document.documentElement.setAttribute('data-theme', 'light');
+        if (themeToggle) {
+            themeToggle.innerHTML = '🌙 Modo Oscuro';
+        }
+    }
+}
+
+// Toggle entre modo oscuro y claro
+function toggleDarkMode() {
+    const currentTheme = document.documentElement.getAttribute('data-theme');
+    const themeToggle = document.getElementById('themeToggle');
+    
+    if (currentTheme === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'light');
+        localStorage.setItem('theme', 'light');
+        if (themeToggle) {
+            themeToggle.innerHTML = '🌙 Modo Oscuro';
+        }
+        mostrarNotificacion('🌞 Modo Claro', 'El tema claro ha sido activado', 'info');
+    } else {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        localStorage.setItem('theme', 'dark');
+        if (themeToggle) {
+            themeToggle.innerHTML = '☀️ Modo Claro';
+        }
+        mostrarNotificacion('🌙 Modo Oscuro', 'El tema oscuro ha sido activado', 'info');
+    }
+    
+    // Recargar gráficos para ajustar colores
+    setTimeout(() => {
+        cargarDashboard();
+    }, 100);
+}
+
+// Agregar evento al cargar la página
+document.addEventListener('DOMContentLoaded', () => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+        window.location.href = 'login.html';
+        return;
+    }
+    
+    initDarkMode(); // Inicializar modo oscuro
+    
+    cargarDashboard();
+    iniciarActualizacionAutomatica();
+    
+    document.getElementById('logoutBtn').addEventListener('click', (e) => {
+        e.preventDefault();
+        detenerActualizacionAutomatica();
+        localStorage.removeItem('token');
+        localStorage.removeItem('usuario');
+        window.location.href = 'login.html';
+    });
+    
+    document.getElementById('refreshBtn').addEventListener('click', () => {
+        const btn = document.getElementById('refreshBtn');
+        btn.classList.add('refresh-spin');
+        cargarDashboard().finally(() => {
+            setTimeout(() => btn.classList.remove('refresh-spin'), 500);
+        });
+    });
+    
+    // Agregar evento del botón de modo oscuro
+    const themeToggle = document.getElementById('themeToggle');
+    if (themeToggle) {
+        themeToggle.addEventListener('click', toggleDarkMode);
+    }
+});
